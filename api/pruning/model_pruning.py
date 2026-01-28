@@ -16,8 +16,6 @@ class SparseModel(nn.Module):
                  device = None,
                  ):
         super(SparseModel, self).__init__()
-        # strategy is a str that [sparsity_distribution]_[pruning_strategy]
-        # e.g. uniform_magnitude
 
         self.model = model
         self.mask_dict = mask_dict
@@ -28,15 +26,7 @@ class SparseModel(nn.Module):
 
         self.scores = None
 
-
-        # layer_set includes all layer names
-        # layer_shape_dict includes the shape of every layer
-        # num_overall_elements is the number of parameters in the whole model
         self.layer_set, self.layer_shape_dict, self.num_overall_elements = self._stat_layer_info()
-
-        # mask_dict only includes the mask of layer that should be pruned(a.k.a sparse layer)
-        # sparse_layer_set the name of the sparse layer
-        # layer_density_dict includes the layer-wise densities for sparse layer (not include ignored layers)
 
         if self.mask_dict:
             self.layer_density_dict = self._stat_density_info()
@@ -87,27 +77,11 @@ class SparseModel(nn.Module):
             sparse_layer_set = _remove_by_name(sparse_layer_set, partial_name,)
 
         for e, (name, module) in enumerate(self.model.named_modules()):
-            # if name == "":
-            #     continue
-
-            # if e in ignore_layer_idx:
-            #     sparse_layer_set.remove(name)
-            #     continue
             for t in ignore_nn_types:
                 if isinstance(module, t):
                     sparse_layer_set = _remove_by_name(sparse_layer_set, name)
                     break
         
-        # total_length = len(sparse_layer_set)
-        # for i in range(len(ignore_layer_idx)):
-        #     if ignore_layer_idx[i] < 0:
-        #         ignore_layer_idx[i] += total_length
-        # # must sorted
-        # ignore_layer_idx.sort(reverse=True)
-        # sparse_layer_set = list(sparse_layer_set)
-        # for idx in ignore_layer_idx:
-        #     sparse_layer_set.pop(idx)
-        # sparse_layer_set = set(sparse_layer_set)
         return sparse_layer_set
 
 
@@ -234,13 +208,6 @@ class SparseModel(nn.Module):
                 mask[sorted_active_by_weight_2[:num_to_prune_2]] = 0
                 logging.info(f"Pruned {num_to_prune_2} weights from {key} ([d_t]_i ≠ -[Δ]_i).")
             
-            # what is trainer ? 
-            # Retrieve the gradient for the current key. Skip growing if the gradient is not found.
-            # gradient = self.trainer.get_gradient(key)
-            # if gradient is None:
-            #     logging.error(f"Gradient for {key} not found. Skipping growth for this key.")
-            #     continue
-
             # add gradients dict 
             gradient = gradient_dict[key]
 

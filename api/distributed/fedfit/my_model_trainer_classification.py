@@ -90,18 +90,9 @@ class MyModelTrainer(ModelTrainer):
         else:
             local_epochs = args.epochs
 
-        if round_idx is not None:
-            # min_lr = getattr(args, "min_lr", 0.0)
-            min_lr = 0.0
-            total_rounds = args.comm_round
-            cos_decay = 0.5 * (1 + math.cos(math.pi * round_idx / total_rounds))
-            lr = min_lr + (args.lr - min_lr) * cos_decay
-            for g in optimizer.param_groups:
-                g["lr"] = lr
-
         if mode in [2, 3]:
             A_epochs = local_epochs // 2 if args.A_epochs is None else args.A_epochs
-            A_epochs = max(1, A_epochs) # 预防 first_epochs 设为零
+            A_epochs = max(1, A_epochs)
             first_epochs = min(local_epochs, A_epochs)
         else:
             first_epochs = local_epochs
@@ -127,9 +118,8 @@ class MyModelTrainer(ModelTrainer):
 
                 if mode in [2, 3] and args.growth_data_mode == "score":
                     for l, _ in model.named_modules():
-                        lg = f"{l[6:] if l.startswith('model.') else l}.weight" # params 需要的格式
-                        # store = {model.layer: {'a': tensor, 'g': tensor}}
-                        # print(list(params.keys())[:50])
+                        lg = f"{l[6:] if l.startswith('model.') else l}.weight"
+
                         if l not in store or "a" not in store[l] or "g" not in store[l] or lg not in params or params[lg].grad is None:
                             continue
 
@@ -191,12 +181,10 @@ class MyModelTrainer(ModelTrainer):
                             score_prune_sum[l] = sp
                             score_grow_sum[l] = sg
                             score_cnt[l] = 1
-
-                # self.model.apply_mask_gradients()  # apply pruning mask
                     
-                # Uncommet this following line to avoid nan loss
-                with torch.no_grad():
-                    torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0, foreach=False)
+                # Uncomment the following lines to avoid nan loss
+                # with torch.no_grad():
+                #     torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0, foreach=False)
 
                 optimizer.step()
 

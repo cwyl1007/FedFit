@@ -21,7 +21,7 @@ cd ../..
 ```
 
 ## GPU Mapping
-In *gpu_mapping.yaml* inside *experiments/distributed/fedfit*, modify *four_gpu* to have the correct number of GPUs and correct number of processes.\\
+In *gpu_mapping.yaml* inside *experiments/distributed/fedfit*, modify *four_gpu* to have the correct number of GPUs and correct number of processes.  
 e.g For four GPUs and 11 processes (10 clients + 1 server, where clients is client_num_per_round)
 ```
 four_gpu: [2, 3, 3, 3]
@@ -32,8 +32,24 @@ To run the code, navigate to the *experiments/distributed/fedfit* and run the be
 ```
 CUDA_VISIBLE_DEVICES=[gpus] sh run_fedfit_distributed_pytorch.sh [model] [dataset] [client_num_in_total] [client_num_per_round]  [comm_round] [epochs] [target_density] [initial_lr]  {--delta_T , --T_end, --partition_alpha, --num_eval, --frequency_of_the_test}
 ```
-Where **[param]** marks required parameters, and **{params}** are optional parameters.\\
-\\
+Where **[param]** marks required parameters, and **{params}** are optional parameters and,  
+```
+[gpus] specifies which GPUs to use.
+[model] is the name of the model.
+[dataset] is the name of the dataset.
+[client_num_in_total] is the total number of clients.
+[client_num_per_round] is the number of clients selected per round.
+[comm_round] is the number of communication rounds.
+[epochs] is the number of local epochs.
+[target_density] is the target density for the sparse model.
+[initial_lr] is the initial learning rate.
+{--delta_T} is the interval rounds between two adjustment round.
+{--T_end} is the end round number for adjustment round.
+{--partition_alpha} refers to the partition alpha, higher partition alpha makes lower degree of data heterogeneity
+{--num_eval}is the number data samples for validation, -1 means using the whole testing dataset.
+{--frequency_of_the_test} the frequency to test/validate the performance during the training, using num_eval data samples
+```
+
 For example, a quick run of FedFit on resnet18 backbone with cifar10, on 100 clients
 ```
 cd experiments/distributed/fedfit

@@ -94,18 +94,9 @@ class MyModelTrainer(ModelTrainer):
         else:
             local_epochs = args.epochs
 
-        # if round_idx is not None:
-        # #    min_lr = getattr(args, "min_lr", 0.0)
-        #     min_lr = 0.0
-        #     total_rounds = args.comm_round
-        #     cos_decay = 0.5 * (1 + math.cos(math.pi * round_idx / total_rounds))
-        #     lr = min_lr + (args.lr - min_lr) * cos_decay
-        #     for g in optimizer.param_groups:
-        #         g["lr"] = lr
-
         if mode in [2, 3]:
             A_epochs = local_epochs // 2 if args.A_epochs is None else args.A_epochs
-            A_epochs = max(1, A_epochs) # 预防 first_epochs 设为零
+            A_epochs = max(1, A_epochs)
             first_epochs = min(local_epochs, A_epochs)
         else:
             first_epochs = local_epochs
@@ -131,9 +122,8 @@ class MyModelTrainer(ModelTrainer):
 
                 if mode in [2, 3] and args.growth_data_mode == "score":
                     for l, _ in model.named_modules():
-                        lg = f"{l[6:] if l.startswith('model.') else l}.weight" # params 需要的格式
-                        # store = {model.layer: {'a': tensor, 'g': tensor}}
-                        # print(list(params.keys())[:50])
+                        lg = f"{l[6:] if l.startswith('model.') else l}.weight"
+
                         if l not in store or "a" not in store[l] or "g" not in store[l] or lg not in params or params[lg].grad is None:
                             continue
 
@@ -186,8 +176,6 @@ class MyModelTrainer(ModelTrainer):
 
                         sp = sp2.view_as(w)
                         sg = sg2.view_as(w)
-
-                        # logging.info(f"COMPARE FDIAG GRAD WEIGHT: {lg} mean | F {F_diag.mean().item():.3e} | W {w.mean().item():.3e} | G {grad.mean().item():.3e}")
                         
                         if l in score_prune_sum:
                             score_prune_sum[l] += sp
@@ -197,13 +185,10 @@ class MyModelTrainer(ModelTrainer):
                             score_prune_sum[l] = sp
                             score_grow_sum[l] = sg
                             score_cnt[l] = 1
-
-                #self.model.apply_mask_gradients()  # apply pruning mask
                     
-                # Uncommet this following line to avoid nan loss
-                # torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
-                with torch.no_grad():
-                    torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0, foreach=False)
+                # Uncomment the following lines to avoid nan loss
+                # with torch.no_grad():
+                #     torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0, foreach=False)
 
                 optimizer.step()
 
@@ -250,7 +235,6 @@ class MyModelTrainer(ModelTrainer):
                 score_prune = {l: score_prune_sum[l] / max(score_cnt[l], 1) for l in score_prune_sum}
                 score_grow = {l: score_grow_sum[l] / max(score_cnt[l], 1) for l in score_grow_sum}
 
-            # pruning and growing 第五步
             self.model.scores = {"prune": score_prune, "grow": score_grow}
 
             if args.growth_data_mode == "score":
@@ -259,7 +243,6 @@ class MyModelTrainer(ModelTrainer):
                 model.adjust_mask_dict(gradients, t=round_idx, T_end=args.T_end, alpha=args.adjust_alpha, scores=None)
             model.apply_mask()
             
-        logging.info("FURTHER TRAINING MODEL CLASSIFICATION")
         for epoch in range(first_epochs, local_epochs):
             batch_loss = []
             for batch_idx, (x, labels) in enumerate(train_data):

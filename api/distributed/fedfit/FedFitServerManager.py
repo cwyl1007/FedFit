@@ -26,11 +26,6 @@ class FedFitServerManager(ServerManager):
         self.preprocessed_client_lists = preprocessed_client_lists
         self.mode = 0 
 
-        # mode 0, the server send both weight and mask to clients, received the weight, perform weight aggregation, if t % \delta t == 0 and t <= t_end, go to mode 2, else, go to mode 1
-        # mode 1, the server send weights, received the weights, perform weights aggregation, if t % \delta t == 0 and t <= t_end, go to mode 2, else, go to mode 1
-        # mode 2, the server send weights, received the weights and masks, perform weights and masks aggregation, pruning and growing to produce new mask,  go to mode 0
-        # TODO (special mode, only for \delta t == 1) mode 3, the server send both weight and mask to clients, received the weights and masks, perform weights and masks aggregation, pruning and growing to produce new mask,  if t < t_end, go to mode 3 ,else , go to mode 0.
-
     def run(self):
         super().run()
 

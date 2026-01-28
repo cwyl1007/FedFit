@@ -23,11 +23,6 @@ class FedFitClientManager(ClientManager):
         self.round_idx = 0
         self.mode = 0
 
-    # mode 0: the client receieve both weight and mask from server;  config the new weight and mask, train; send the weight
-    # mode 1: the client receieve weights;  config the new weight, train;  send the weight,
-    # mode 2: the client receieve weights;  config the new weight; train weight and masks; send the weight and masks
-    # TODO (special mode, only for \delta t == 1) mode 3: receieve both weight and mask; config the new weight and mask, train weight and masks; send the weight and masks
-
     def run(self):
         super().run()
 
