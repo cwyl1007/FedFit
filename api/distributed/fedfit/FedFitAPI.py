@@ -1,12 +1,12 @@
 from mpi4py import MPI
 
-from .FedDSTAggregator import FedDSTAggregator
-from .FedDSTTrainer import FedDSTTrainer
-from .FedDSTClientManager import FedDSTClientManager
-from .FedDSTServerManager import FedDSTServerManager
+from .FedFitAggregator import FedFitAggregator
+from .FedFitTrainer import FedFitTrainer
+from .FedFitClientManager import FedFitClientManager
+from .FedFitServerManager import FedFitServerManager
 
-from api.standalone.feddst.my_model_trainer_classification import MyModelTrainer as MyModelTrainerCLS
-from api.standalone.feddst.my_model_trainer_language_model import MyModelTrainer as MyModelTrainerLM
+from my_model_trainer_classification import MyModelTrainer as MyModelTrainerCLS
+from my_model_trainer_language_model import MyModelTrainer as MyModelTrainerLM
 
 def FedML_init():
     comm = MPI.COMM_WORLD
@@ -15,7 +15,7 @@ def FedML_init():
     return comm, process_id, worker_number
 
 
-def FedML_FedDST_distributed(
+def FedML_FedFit_distributed(
     process_id,
     worker_number,
     device,
@@ -91,7 +91,7 @@ def init_server(
 
     # aggregator
     worker_num = size - 1
-    aggregator = FedDSTAggregator(
+    aggregator = FedFitAggregator(
         train_data_global,
         test_data_global,
         train_data_num,
@@ -107,9 +107,9 @@ def init_server(
     # start the distributed training
     backend = args.backend
     if preprocessed_sampling_lists is None:
-        server_manager = FedDSTServerManager(args, aggregator, comm, rank, size, backend)
+        server_manager = FedFitServerManager(args, aggregator, comm, rank, size, backend)
     else:
-        server_manager = FedDSTServerManager(
+        server_manager = FedFitServerManager(
             args,
             aggregator,
             comm,
@@ -146,7 +146,7 @@ def init_client(
             model_trainer = MyModelTrainerCLS(model)
     model_trainer.set_id(client_index)
     backend = args.backend
-    trainer = FedDSTTrainer(
+    trainer = FedFitTrainer(
         client_index,
         train_data_local_dict,
         train_data_local_num_dict,
@@ -156,5 +156,5 @@ def init_client(
         args,
         model_trainer,
     )
-    client_manager = FedDSTClientManager(args, trainer, comm, process_id, size, backend)
+    client_manager = FedFitClientManager(args, trainer, comm, process_id, size, backend)
     client_manager.run()

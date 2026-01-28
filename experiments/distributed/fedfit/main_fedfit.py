@@ -23,10 +23,14 @@ from api.data_preprocessing.cifar100.data_loader import load_partition_data_cifa
 from api.data_preprocessing.cinic10.data_loader import load_partition_data_cinic10
 from api.data_preprocessing.svhn.data_loader import load_partition_data_svhn
 from api.data_preprocessing.tinystories.data_loader import load_partition_data_tinystories
+from api.data_preprocessing.tiny_imagenet.data_loader import load_partition_data_tiny
 
 from api.model.cv.resnet_gn import resnet18 as resnet18_gn
 from api.model.cv.mobilenet import mobilenet
 from api.model.cv.resnet import resnet18, resnet56
+
+from api.model.cv.vit import vit_gpt
+
 from api.model.nlp.gpt2 import GPT2Model, GPT2Config
 from torchvision.models import mobilenet_v3_small as MobileNetV3
 from torchvision.models import efficientnet_v2_s as EfficientNetV2
@@ -36,7 +40,8 @@ from torchvision.models import swin_t as SwinT
 from torchvision.models import vit_b_16 as ViT
 from torchvision.models import mnasnet0_75 as MNASNet
 
-from api.distributed.fedtinyclean.FedTinyCleanAPI import FedML_init, FedML_FedTinyClean_distributed
+
+from api.distributed.fedfit.FedFitAPI import FedML_init, FedML_FedFit_distributed
 from api.pruning.model_pruning import SparseModel
 
 
@@ -51,11 +56,11 @@ def add_args(parser):
     parser.add_argument("--dataset", type=str, default="cifar10", metavar="N", help="dataset used for training")
 
     parser.add_argument(
-        "--partition_alpha", type=float, default=0.5, metavar="PA", help="partition alpha (default: 0.5)"
+        "--dataset_ratio", type=float, default=0.05, metavar="PA", help="the ratio of subset for the total dataset (default: 0.05). Only appliable for [tinystories, ]"
     )
 
     parser.add_argument(
-        "--dataset_ratio", type=float, default=0.05, metavar="PA", help="the ratio of subset for the total dataset (default: 0.05). Only appliable for [tinystories, ]"
+        "--partition_alpha", type=float, default=0.5, metavar="PA", help="partition alpha (default: 0.5)"
     )
 
     parser.add_argument(
@@ -71,23 +76,25 @@ def add_args(parser):
     parser.add_argument(
         "--nlp_hidden_size", type=int, default=256, metavar="N", help="the hidden size for nlp model (default: 256) option: [64, 256, 1024]"
     )
-    
-    
+
     parser.add_argument(
         "--num_eval", type=int, default=128, help="the number of the data samples used for eval, -1 is the total testing dataset."
     )
-    parser.add_argument('--lr', type=float, default=0.001, metavar='LR', help='learning rate (default: 0.001)')
+    parser.add_argument('--lr', type=float, default=0.001, metavar='LR',
+                        help='learning rate (default: 0.001)')
 
     parser.add_argument("--epochs", type=int, default=5, metavar="EP", help="how many epochs will be trained locally")
 
+    parser.add_argument("--A_epochs", type=int, default=0, metavar="EP", help="how many epochs will be trained before pruning and growing ")
+
     parser.add_argument("--comm_round", type=int, default=10, help="how many round of communications we shoud use")
 
-    parser.add_argument("--frequency_of_the_test", type=int, default=1, help="the frequency of the algorithms")
-    
-    parser.add_argument('--pruning_strategy', type=str, default="ERK_magnitude",
+    parser.add_argument("--frequency_of_the_test", type=int, default=5, help="the frequency of the algorithms")
+
+    parser.add_argument('--pruning_strategy', type=str, default="ERK_score",
         help='the distribution of layerwise density and the pruning method, options["uniform_magnitude", "ER_magnitude", "ERK_magnitude"]')
 
-    parser.add_argument('--target_density', type=float, default=0.1,
+    parser.add_argument('--target_density', type=float, default=0.5,
                         help='pruning target density')
 
     parser.add_argument('--delta_T', type=int, default=10, help='delta t for update')
@@ -95,7 +102,7 @@ def add_args(parser):
     parser.add_argument('--T_end', type=int, default=100, help='end of time for update')
 
     parser.add_argument("--adjust_alpha", type=float, default=0.2, help='the ratio of num elements for adjustments')
-    
+
     parser.add_argument("--adjustment_epochs", type=int, default=None, help=" the number of local apoches used in model adjustment round, if it is set None, it is equal to the number of epoches for training round" )
 
     # Following arguments are seldom changed
@@ -136,9 +143,10 @@ def add_args(parser):
 
     parser.add_argument("--client_optimizer", type=str, default="sgd", help="SGD with momentum; adam")
 
-    parser.add_argument("--growth_data_mode", type=str, default="batch", help=" the number of data samples used for parameter growth, option are [ 'random', 'single', 'batch', 'entire']" )
+    # parser.add_argument("--growth_data_mode", type=str, default="batch", help=" the number of data samples used for parameter growth, option are [ 'random', 'single', 'batch', 'entire']" )
+    parser.add_argument("--growth_data_mode", type=str, default="score", help=" the number of data samples used for parameter growth, option are [ 'random', 'single', 'batch', 'entire']" )
 
-    args = parser.parse_args()
+    args = parser.parse_args()  
     return args
 
 
@@ -149,9 +157,16 @@ def load_data(args, dataset_name):
     
 
     if dataset_name == "tinystories":
-        dataset_tuple = load_partition_data_tinystories(args.partition_method,
-            args.partition_alpha, args.client_num_in_total, args.batch_size,  args.dataset_ratio)
-
+        pass
+        dataset_tuple = load_partition_data_tinystories(args.partition_method, args.partition_alpha, args.client_num_in_total, args.batch_size, args.dataset_ratio)
+    elif dataset_name == "tinyimagenet":
+        dataset_tuple = load_partition_data_tiny(
+            args.data_dir,
+            args.partition_method,
+            args.partition_alpha,
+            args.client_num_in_total,
+            args.batch_size
+        )
     else:
         if dataset_name == "cifar10":
             data_loader = load_partition_data_cifar10
@@ -199,6 +214,8 @@ def create_model(args, model_name, output_dim):
         model = SwinT(num_classes=output_dim)
     elif model_name == "vit":
         model = ViT(image_size=32, num_classes = output_dim)
+    elif model_name == "vit_gpt":
+        model = vit_gpt()
     elif model_name == "mnasnet":
         model = MNASNet(num_classes = output_dim)
     elif model_name == "gpt2":
@@ -223,7 +240,7 @@ if __name__ == "__main__":
     logging.info(args)
 
     # customize the process name
-    str_process_name = "FedTiny-Clean (distributed):" + str(process_id)
+    str_process_name = "FedFit (distributed):" + str(process_id)
     setproctitle.setproctitle(str_process_name)
 
     # customize the log format
@@ -250,10 +267,11 @@ if __name__ == "__main__":
     if process_id == 0:
         wandb.init(
             project="FedPruning",
-            name="FedTiny-Clean_"
+            name="FedFit_"
             + args.dataset 
             + "_"
             + args.model 
+            + "_" # Renaming
             ,
             config=args,
         )
@@ -294,7 +312,7 @@ if __name__ == "__main__":
     model = SparseModel(inner_model, target_density=args.target_density, strategy=args.pruning_strategy)
 
     # start distributed training
-    FedML_FedTinyClean_distributed(
+    FedML_FedFit_distributed(
         process_id,
         worker_number,
         device,
