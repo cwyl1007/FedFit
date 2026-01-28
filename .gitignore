@@ -1,5 +1,5 @@
 .idea
-data/*
+# data/*
 *__pycache__*
 *wandb*
 *.DS_Store
