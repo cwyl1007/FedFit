@@ -1,4 +1,4 @@
-# FedFit: A Fisher Information Based Federated Pruning Method
+# FedFit: Federated Dynamic Sparse Training via Fisher Information scoring
 
 This repository provides an implementation for paper "FedFit: Federated Dynamic Sparse Training via Fisher Information scoring".
 
@@ -21,7 +21,7 @@ cd ../..
 ```
 
 ## GPU Mapping
-In *gpu_mapping.yaml* inside *experiments/distributed/fedfit*, modify *four_gpu* to have the correct number of GPUs and correct number of processes
+In *gpu_mapping.yaml* inside *experiments/distributed/fedfit*, modify *four_gpu* to have the correct number of GPUs and correct number of processes.\\
 e.g For four GPUs and 11 processes (10 clients + 1 server, where clients is client_num_per_round)
 ```
 four_gpu: [2, 3, 3, 3]
@@ -32,8 +32,8 @@ To run the code, navigate to the *experiments/distributed/fedfit* and run the be
 ```
 CUDA_VISIBLE_DEVICES=[gpus] sh run_fedfit_distributed_pytorch.sh [model] [dataset] [client_num_in_total] [client_num_per_round]  [comm_round] [epochs] [target_density] [initial_lr]  {--delta_T , --T_end, --partition_alpha, --num_eval, --frequency_of_the_test}
 ```
-Where [] marks required parameters, and inside {} are optional parameters.
-
+Where [param] marks required parameters, and inside {params} are optional parameters.\\
+\\
 For example, a quick run of FedFit on resnet18 backbone with cifar10, on 100 clients
 ```
 cd experiments/distributed/fedfit
