@@ -31,7 +31,7 @@ four_gpu: [2, 3, 3, 3]
 To run the code, navigate to the *experiments/distributed/fedfit* and run the below command 
 ```python
 CUDA_VISIBLE_DEVICES=[gpus] sh run_fedfit_distributed_pytorch.sh [model] [dataset] [client_num_in_total] [client_num_per_round]  [comm_round] [epochs] [target_density] [initial_lr]  {--delta_T , --T_end, --partition_alpha, --num_eval, --frequency_of_the_test}
-```python
+```
 Where **[param]** marks required parameters, and **{params}** are optional parameters and,  
 ```python
 [gpus] specifies which GPUs to use.
