@@ -1,13 +1,4 @@
-'''
-ResNet for CIFAR-10/100 Dataset.
 
-Reference:
-1. https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py
-2. https://github.com/facebook/fb.resnet.torch/blob/master/models/resnet.lua
-3. Kaiming He, Xiangyu Zhang, Shaoqing Ren, Jian Sun
-Deep Residual Learning for Image Recognition. https://arxiv.org/abs/1512.03385
-
-'''
 import logging
 
 import torch
@@ -151,9 +142,7 @@ class ResNet(nn.Module):
             elif isinstance(m, nn.BatchNorm2d):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
-        # Zero-initialize the last BN in each residual branch,
-        # so that the residual branch starts with zeros, and each residual block behaves like an identity.
-        # This improves the model by 0.2~0.3% according to https://arxiv.org/abs/1706.02677
+
         if zero_init_residual:
             for m in self.modules():
                 if isinstance(m, Bottleneck):

@@ -1,7 +1,6 @@
 import torch.nn.functional as F
 from torch.nn.modules.batchnorm import _BatchNorm
 
-"""Pytorch implementation of group normalization in https://arxiv.org/abs/1803.08494 (Following the PyTorch Style)"""
 
 
 def group_norm(input, group, running_mean, running_var, weight=None, bias=None,
@@ -73,33 +72,6 @@ class _GroupNorm(_BatchNorm):
 
 
 class GroupNorm2d(_GroupNorm):
-    r"""Applies Group Normalization over a 4D input (a mini-batch of 2D inputs
-    with additional channel dimension) as described in the paper
-    https://arxiv.org/pdf/1803.08494.pdf
-    `Group Normalization`_ .
-    Args:
-        num_features: :math:`C` from an expected input of size
-            :math:`(N, C, H, W)`
-        num_groups:
-        eps: a value added to the denominator for numerical stability. Default: 1e-5
-        momentum: the value used for the running_mean and running_var computation. Default: 0.1
-        affine: a boolean value that when set to ``True``, this module has
-            learnable affine parameters. Default: ``True``
-        track_running_stats: a boolean value that when set to ``True``, this
-            module tracks the running mean and variance, and when set to ``False``,
-            this module does not track such statistics and always uses batch
-            statistics in both training and eval modes. Default: ``False``
-    Shape:
-        - Input: :math:`(N, C, H, W)`
-        - Output: :math:`(N, C, H, W)` (same shape as input)
-    Examples:
-        >>> # Without Learnable Parameters
-        >>> m = GroupNorm2d(100, 4)
-        >>> # With Learnable Parameters
-        >>> m = GroupNorm2d(100, 4, affine=True)
-        >>> input = torch.randn(20, 100, 35, 45)
-        >>> output = m(input)
-    """
 
     def _check_input_dim(self, input):
         if input.dim() != 4:

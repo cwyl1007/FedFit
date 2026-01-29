@@ -34,16 +34,6 @@ VALID_MODELS = (
 
 
 class MBConvBlock(nn.Module):
-    """Mobile Inverted Residual Bottleneck Block.
-    Args:
-        block_args (namedtuple): BlockArgs, defined in utils.py.
-        global_params (namedtuple): GlobalParam, defined in utils.py.
-        image_size (tuple or list): [image_height, image_width].
-    References:
-        [1] https://arxiv.org/abs/1704.04861 (MobileNet v1)
-        [2] https://arxiv.org/abs/1801.04381 (MobileNet v2)
-        [3] https://arxiv.org/abs/1905.02244 (MobileNet v3)
-    """
 
     def __init__(self, block_args, global_params, image_size=None):
         super().__init__()
@@ -136,23 +126,6 @@ class MBConvBlock(nn.Module):
 
 
 class EfficientNet(nn.Module):
-    """EfficientNet model.
-       Most easily loaded with the .from_name or .from_pretrained methods.
-    Args:
-        blocks_args (list[namedtuple]): A list of BlockArgs to construct blocks.
-        global_params (namedtuple): A set of GlobalParams shared between blocks.
-    References:
-        [1] https://arxiv.org/abs/1905.11946 (EfficientNet)
-    Example:
-        
-        
-        import torch
-        >>> from efficientnet.model import EfficientNet
-        >>> inputs = torch.rand(1, 3, 224, 224)
-        >>> model = EfficientNet.from_pretrained('efficientnet-b0')
-        >>> model.eval()
-        >>> outputs = model(inputs)
-    """
 
     def __init__(self, blocks_args=None, global_params=None):
         super().__init__()
