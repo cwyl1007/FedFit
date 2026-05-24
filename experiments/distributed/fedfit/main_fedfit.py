@@ -11,7 +11,6 @@ import setproctitle
 import torch
 import wandb
 
-# add the FedML root directory to the python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "./../../../../")))
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "./../../../")))
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "")))
@@ -227,7 +226,6 @@ def create_model(args, model_name, output_dim):
     return model
 
 if __name__ == "__main__":
-    # quick fix for issue in MacOS environment: https://github.com/openai/spinningup/issues/16
     if sys.platform == "darwin":
         os.environ["KMP_DUPLICATE_LIB_OK"] = "True"
 
@@ -263,7 +261,6 @@ if __name__ == "__main__":
         + str(psutil.Process(os.getpid()))
     )
 
-    # initialize the wandb machine learning experimental tracking platform (https://www.wandb.com/).
     if process_id == 0:
         wandb.init(
             project="FedPruning",

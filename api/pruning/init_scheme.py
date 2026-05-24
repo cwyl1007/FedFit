@@ -241,49 +241,15 @@ def sparse_growing_step(model, gradients, mask_dict, layer_density_dict):
 
 
 def get_erdos_renyi_dist(layer_shape_dict, sparse_layer_set, target_density, is_kernel: bool = True) :
-    """
-    Get layer-wise densities distributed according to
-    ER or ERK (erdos-renyi or erdos-renyi-kernel).
-
-    Ensures resulting densities do not cross 1
-    for any layer.
-
-    :param masking: Masking instance
-    :param is_kernel: use ERK (True), ER (False)
-    :return: Layer-wise density dict
-    """
-    # Same as Erdos Renyi with modification for conv
-    # initialization used in sparse evolutionary training
-    # scales the number of non-zero weights linearly proportional
-    # to the product of all dimensions, that is input*output
-    # for fully connected layers, and h*w*in_c*out_c for conv
-    # layers.
+   
     _erk_power_scale = 1.0
 
     epsilon = 1.0
     is_epsilon_valid = False
-    # # The following loop will terminate worst case when all masks are in the
-    # custom_sparsity_map. This should probably never happen though, since once
-    # we have a single variable or more with the same constant, we have a valid
-    # epsilon. Note that for each iteration we add at least one variable to the
-    # custom_sparsity_map and therefore this while loop should terminate.
+
     _dense_layers = set()
     while not is_epsilon_valid:
-        # We will start with all layers and try to find right epsilon. However if
-        # any probablity exceeds 1, we will make that layer dense and repeat the
-        # process (finding epsilon) with the non-dense layers.
-        # We want the total number of connections to be the same. Let say we have
-        # for layers with N_1, ..., N_4 parameters each. Let say after some
-        # iterations probability of some dense layers (3, 4) exceeded 1 and
-        # therefore we added them to the dense_layers set. Those layers will not
-        # scale with erdos_renyi, however we need to count them so that target
-        # paratemeter count is achieved. See below.
-        # eps * (p_1 * N_1 + p_2 * N_2) + (N_3 + N_4) =
-        #    (1 - default_sparsity) * (N_1 + N_2 + N_3 + N_4)
-        # eps * (p_1 * N_1 + p_2 * N_2) =
-        #    (1 - default_sparsity) * (N_1 + N_2) - default_sparsity * (N_3 + N_4)
-        # eps = rhs / (\sum_i p_i * N_i) = rhs / divisor.
-
+       
         divisor = 0
         rhs = 0
         raw_probabilities = {}

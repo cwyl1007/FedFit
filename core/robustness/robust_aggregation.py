@@ -55,17 +55,7 @@ class RobustAggregator(object):
         return dp_weight
 
     def coordinate_median_agg(self, model_list: list[(int,dict)]) -> dict:
-        """
-        Coordinate-wise Median from "Byzantine-Robust Distributed Learning: Towards Optimal Statistical Rates".
-        This can be called at aggregate() of an Aggregator inplace of parameter averaging after \
-        model_list has been created
 
-        Args:
-            model_list (list[(number of samples, model state_dict)]): list of tuples from Aggregator 
-        
-        Returns: 
-             averaged_params: state dict containing coordinate-wise median of all state dicts 
-        """
 
         # Initialize state dict
         (num0, averaged_params) = model_list[0]

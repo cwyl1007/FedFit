@@ -25,10 +25,7 @@ class Architect(object):
             weight_decay=args.arch_weight_decay)
 
         self.device = device
-    # Momentum: https://blog.paperspace.com/intro-to-optimization-momentum-rmsprop-adam/
-    # V_j = coefficient_momentum * V_j - learning_rate * gradient
-    # W_j = V_j + W_jx  x
-    # https://www.youtube.com/watch?v=k8fTYJPd3_I
+        
     def _compute_unrolled_model(self, input, target, eta, network_optimizer):
         logits = self.model(input)
         loss = self.criterion(logits, target)

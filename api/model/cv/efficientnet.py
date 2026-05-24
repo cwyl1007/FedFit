@@ -2,9 +2,6 @@
    They are built to mirror those in the official TensorFlow implementation.
 """
 
-# Author: lukemelas (github username)
-# Github repo: https://github.com/lukemelas/EfficientNet-PyTorch
-# With adjustments and added comments by workingcoder (github username).
 
 import torch
 from torch import nn
@@ -192,25 +189,7 @@ class EfficientNet(nn.Module):
             block.set_swish(memory_efficient)
 
     def extract_endpoints(self, inputs):
-        """Use convolution layer to extract features
-        from reduction levels i in [1, 2, 3, 4, 5].
-        Args:
-            inputs (tensor): Input tensor.
-        Returns:
-            Dictionary of last intermediate features
-            with reduction levels i in [1, 2, 3, 4, 5].
-            Example:
-                >>> import torch
-                >>> from efficientnet.model import EfficientNet
-                >>> inputs = torch.rand(1, 3, 224, 224)
-                >>> model = EfficientNet.from_pretrained('efficientnet-b0')
-                >>> endpoints = model.extract_endpoints(inputs)
-                >>> print(endpoints['reduction_1'].shape)  # torch.Size([1, 16, 112, 112])
-                >>> print(endpoints['reduction_2'].shape)  # torch.Size([1, 24, 56, 56])
-                >>> print(endpoints['reduction_3'].shape)  # torch.Size([1, 40, 28, 28])
-                >>> print(endpoints['reduction_4'].shape)  # torch.Size([1, 112, 14, 14])
-                >>> print(endpoints['reduction_5'].shape)  # torch.Size([1, 1280, 7, 7])
-        """
+        
         endpoints = dict()
 
         # Stem
@@ -300,30 +279,7 @@ class EfficientNet(nn.Module):
     @classmethod
     def from_pretrained(cls, model_name, weights_path=None, advprop=False,
                         in_channels=3, num_classes=1000, **override_params):
-        """create an efficientnet model according to name.
-        Args:
-            model_name (str): Name for efficientnet.
-            weights_path (None or str):
-                str: path to pretrained weights file on the local disk.
-                None: use pretrained weights downloaded from the Internet.
-            advprop (bool):
-                Whether to load pretrained weights
-                trained with advprop (valid when weights_path is None).
-            in_channels (int): Input data's channel number.
-            num_classes (int):
-                Number of categories for classification.
-                It controls the output size for final linear layer.
-            override_params (other key word params):
-                Params to override model's global_params.
-                Optional key:
-                    'width_coefficient', 'depth_coefficient',
-                    'image_size', 'dropout_rate',
-                    'batch_norm_momentum',
-                    'batch_norm_epsilon', 'drop_connect_rate',
-                    'depth_divisor', 'min_depth'
-        Returns:
-            A pretrained efficientnet model.
-        """
+     
         model = cls.from_name(model_name, num_classes=num_classes, **override_params)
         load_pretrained_weights(model, model_name, weights_path=weights_path, load_fc=(num_classes == 1000), advprop=advprop)
         model._change_in_channels(in_channels)

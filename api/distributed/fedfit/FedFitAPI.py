@@ -5,8 +5,8 @@ from .FedFitTrainer import FedFitTrainer
 from .FedFitClientManager import FedFitClientManager
 from .FedFitServerManager import FedFitServerManager
 
-from my_model_trainer_classification import MyModelTrainer as MyModelTrainerCLS
-from my_model_trainer_language_model import MyModelTrainer as MyModelTrainerLM
+from api.distributed.fedfit.my_model_trainer_classification import MyModelTrainer as MyModelTrainerCLS
+from api.distributed.fedfit.my_model_trainer_language_model import MyModelTrainer as MyModelTrainerLM
 
 def FedML_init():
     comm = MPI.COMM_WORLD

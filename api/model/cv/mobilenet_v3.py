@@ -2,10 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-'''
-    Refer to 
-    https://github.com/leaderj1001/MobileNetV3-Pytorch.git
-'''
 
 
 def get_model_parameters(model):

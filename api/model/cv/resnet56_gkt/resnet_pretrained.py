@@ -121,7 +121,6 @@ class ResNet(nn.Module):
         self.groups = groups
         self.base_width = width_per_group
 
-        # initialization is defined here:https://github.com/pytorch/pytorch/tree/master/torch/nn/modules
         self.conv1 = nn.Conv2d(3, self.inplanes, kernel_size=3, stride=1, padding=1,
                                bias=False)  # init: kaiming_uniform
         self.bn1 = nn.BatchNorm2d(self.inplanes)
